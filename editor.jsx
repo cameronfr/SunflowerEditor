@@ -60,6 +60,8 @@ import * as Y from 'yjs'
 import { yCollab } from './yCodemirrorNext'
 import logoImage from "./logo.png"
 import { WebrtcProvider } from 'y-webrtc'
+import { WebsocketProvider } from 'y-websocket'
+// import { WebrtcProvider } from './y-webrtc'
 import { IndexeddbPersistence } from 'y-indexeddb'
 
 // STYLE dict
@@ -672,19 +674,20 @@ function CodeMirrorStateManager({docString, readOnly, scrollPos})  {
     console.log("yJS loaded data from indexedDB")
   })
 
-  const provider = new WebrtcProvider(documentID, ydoc)
-  provider.awareness.setLocalStateField("user", {
+  const webrtcProvider = new WebrtcProvider(documentID, ydoc)
+  const wsProvider = new WebsocketProvider('wss://yjs-relay.sunflower.industries', documentID, ydoc, {awareness: webrtcProvider.awareness})
+  // const wsProvider = new WebsocketProvider('wss://yjs-relay.sunflower.industries', documentID, ydoc)
+  wsProvider.awareness.setLocalStateField("user", {
     name: "User " + Math.floor(Math.random() * 100),
     color: userColor.color,
     colorLight: userColor.light
   })
 
-
   var editorState = EditorState.create({
     doc: ytext.toString(),
 
     extensions: [
-      yCollab(ytext, provider.awareness),
+      yCollab(ytext, wsProvider.awareness),
       saveSnapshots,
 
       lineNumbers(),
