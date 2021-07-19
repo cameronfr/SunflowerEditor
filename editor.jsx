@@ -1,4 +1,16 @@
 // # All Imports
+const IS_DEBUG = !!window.location.port
+const IS_WEBPACK = !IS_DEBUG || window.location.port != "2001"
+if (IS_WEBPACK) {
+  window.useHandler = () => {}
+  // FastRefreshComponent is nullified when IS_WEBPACK is true
+}
+
+const RUNNER_URL = IS_DEBUG ? `${location.protocol}//${location.hostname}:2001/runner.html` : "https://editor-runner.sunflower.industries/runner.html"
+// Redirect in case user finds self on wrong domain
+if (window.location.origin == "https://editor-runner.sunflower.industries") {
+  window.location = "https://editor.sunflower.industries"
+}
 
 import React, { useEffect } from "react";
 import ReactDOM from "react-dom"
@@ -583,8 +595,8 @@ function CodeMirrorStateManager({docString, readOnly, scrollPos})  {
       url.searchParams.set("room", roomID);
       url.search = url.searchParams.toString()
       window.history.pushState({}, "", url.toString())
-      return roomID
     }
+    return roomID
   }
   var documentID = getDocumentID()
 
@@ -876,8 +888,7 @@ var CodeRunner = props => {
 
   var [workerID, setWorkerID] = React.useState(null)
 
-  // DEBUG: todo: change back to localhost to get cross-domain own-thread benefits
-  const iframeSrc = `${location.protocol}//${location.hostname}:2001/runner.html`
+  const iframeSrc = RUNNER_URL
   const postFrameMessage = (msg, port) => {
     msg = {from: "interpreterController", ...msg, interpreterID: workerID}
     iframeRef.current.contentWindow.postMessage(msg, iframeSrc, port)

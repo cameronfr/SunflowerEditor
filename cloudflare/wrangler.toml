@@ -1,0 +1,11 @@
+name = "sunflower-editor"
+type = "webpack"
+routes = ["editor-runner.sunflower.industries/*", "editor.sunflower.industries/*"]
+zone_id = '09cc3d99d71f0661a232b98b9a715b39'
+usage_model = ''
+workers_dev = false
+account_id = "6dbbc66a329c3caf3a0ae2f63a570677"
+
+[site]
+bucket = "../dist" # <-- Add your build directory name here!
+entry-point = "./"

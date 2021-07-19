@@ -10,7 +10,7 @@ if (!(devServerOrBuild == "server" || devServerOrBuild == "build")) {
   return
 }
 const address = process.argv[3] || "localhost"
-const outDir = devServerOrBuild == "build" ? process.argv[3] : "dist"
+const outDir = process.argv[3] || "dist"
 
 var moduleOptions = {
   noParse: /\@babel\/standalone/,
@@ -52,6 +52,11 @@ var webpackConfig = [{
 }, {
   mode: devServerOrBuild == "server" ? "development" : "production",
   entry: path.resolve(__dirname, 'interpreterWorker.js'),
+  optimization: {
+    minimize: devServerOrBuild == "server" ? false : true,
+    minimizer: [new TerserPlugin({
+    })],
+  },
   plugins: [
     // Needed for babel-standalone, I think
     new NodePolyfillPlugin(),
