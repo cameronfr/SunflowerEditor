@@ -24,7 +24,8 @@ var makeLogger = (prefix, consoleObj)=> {
 }
 const shortID = String(workerID).slice(0,2)
 var workerLogger = makeLogger(`Worker ${String(workerID).slice(0,2)}`, console)
-console = {...console, ...workerLogger}
+// console = {...console, ...workerLogger}
+console = {log: () => {}}
 
 // GLOBALS
 // Full state includes below as well as DOM state, so fully resetting state is done by reloading the page

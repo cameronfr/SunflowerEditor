@@ -671,7 +671,7 @@ function CodeMirrorStateManager({docString, readOnly, scrollPos})  {
 
 
   indexeddbProvider.whenSynced.then(() => {
-    console.log("yJS loaded data from indexedDB")
+    // console.log("yJS loaded data from indexedDB")
   })
 
   const webrtcProvider = new WebrtcProvider(documentID, ydoc)
@@ -697,7 +697,7 @@ function CodeMirrorStateManager({docString, readOnly, scrollPos})  {
       EditorView.exceptionSink.of(e => console.error(e)),
       EditorView.theme({"&.cm-wrap": {outline: "none", height: "100%", fontFamily: "inherit"}, ".cm-scroller": {outline: "none", fontFamily: "MonoLisa, Menlo, Monaco, 'Courier New', monospace", fontWeight: "normal", fontSize: 14}, ".cm-content": {padding: STYLE.marginXSmall}}),
       indentOnInput(),
-      autocompletion({override: [completeAnyWord]}),
+      // autocompletion({override: [completeAnyWord]}),
       ...(language ? [language] : []),
       // TODO: add back
       indentHack, // Indent on wrap
@@ -717,7 +717,7 @@ function CodeMirrorStateManager({docString, readOnly, scrollPos})  {
 
   this.startOffsetMap = (id, docLength) => {
     this.state.offsetMaps[id] = ChangeSet.empty(docLength)
-    console.log("Creating new offset map ID:", id, this.state.offsetMaps[id])
+    // console.log("Creating new offset map ID:", id, this.state.offsetMaps[id])
   }
 
   const debugrangesetItems = set => {
@@ -832,19 +832,21 @@ function CodeMirrorStateManager({docString, readOnly, scrollPos})  {
 
       // Modify the assoc of the deco at the newline, so that it won't go to the newline when mapped
       var newlineDeco
+      // console.log("NEWLINE? :", newlineInserted(transaction))
       if (newlineInserted(transaction) && transaction.selection?.ranges) {
         // console.log("DISPATCH newline inserted afr2")
         // Get point where cursor went down from
         const newlineLocation = transaction.startState.selection.ranges[0].from
         currentDecorations.between(newlineLocation, newlineLocation+1, (from, to, val) => {
           newlineDeco = val
+          // console.log("NEWLINE: DECO IS", newlineDeco)
         })
       }
-      // console.log("DISPATCH before mapping decos afr2", debugrangesetItems(currentDecorations))
+      // console.log("DISPATCH newl before mapping decos afr2", debugrangesetItems(currentDecorations))
       if (newlineDeco) {newlineDeco.startSide =-1; newlineDeco.endSide=-1}
       var mappedDecorations = currentDecorations.map(transaction.changes)
       if (newlineDeco) {newlineDeco.startSide =1; newlineDeco.endSide=1}
-      // console.log("DISPATCH after mapping decos afr2", debugrangesetItems(mappedDecorations))
+      // console.log("DISPATCH newl after mapping decos afr2", debugrangesetItems(mappedDecorations))
 
       var effect = decorations.reconfigure(EditorView.decorations.of(mappedDecorations))
       newTransaction = transaction.state.update({effects: [effect]})
@@ -877,11 +879,11 @@ function CodeMirrorStateManager({docString, readOnly, scrollPos})  {
     dispatch: (...args) => dispatchRef.current(...args),
   })
 
-  console.log("Timeout to scroll to", scrollPos)
+  // console.log("Timeout to scroll to", scrollPos)
   // Not cool but will have to do. Should somehow wait until codemirror has added overflowY style AND loaded requisite stuff in
   setTimeout(() => {
     //window.getComputedStyle(editorView.scrollDOM).overflowY
-    console.log("Timeout running to scroll to", scrollPos)
+    // console.log("Timeout running to scroll to", scrollPos)
     editorView.scrollDOM.scrollTop = scrollPos
   }, 500)
 
@@ -913,6 +915,7 @@ var CodeRunner = props => {
     var registeredWidgets = {}
     var timeouts = {}
     var pushDecorations = () => {
+      // console.log("Pushing decos", annotationsBySnippetID)
       if (Object.keys(annotationsBySnippetID).length == 0) {
         //updateDebounceTimeout(pushDecorations)
         //return
@@ -1017,7 +1020,10 @@ var CodeRunner = props => {
             if (charBefore.text.length == 1 && charBefore.text?.[0] == " ") {
               newLocation = location + 1
             }
+            // console.log("NEWLOCATION to", newLocation)
           }
+          // Need to fix widget assoc, if turn off TrackDel mapped position is messed up. Can disable AST changing to re-push decos
+          // widget.mapMode = MapMode.Simple // Don't use MapMode.TrackDel
           var widgetWithRange = widget.range(newLocation, newLocation)
           annotationsBySnippetID[codeSnippetID].annotations[newLocation] = widgetWithRange
         }
@@ -1118,7 +1124,7 @@ var CodeRunner = props => {
               var setDisabled = () => {disabled = true}
               pending.push(setDisabled)
               onNeedsReload(() => {
-                console.log("Posting reload request")
+                // console.log("Posting reload request")
                 disabled && console.log("Hook cleanup, not doing reload")
                 !disabled && postFrameMessage({reload: true})
               })
@@ -1127,7 +1133,7 @@ var CodeRunner = props => {
         } else {
           // Fresh worker, so no code running. Need to give it code
           // WARNING: this will still be called even if activeCode is ""
-          console.log("Posting run code", workerID)
+          // console.log("Posting run code", workerID)
           postFrameMessage({runCode: {codeString, codeVersionID}})
           onLoadCode()
         }
@@ -1334,7 +1340,7 @@ var EditorCode = props => {
     const frameContainerStyle = {position: "absolute", width: "100%", height: "100%"}
 
     var revert
-    console.log(`Effect ${effectID} Running`, "active is", activeFrameIdx)
+    // console.log(`Effect ${effectID} Running`, "active is", activeFrameIdx)
 
     var updateDecoVisiblity = (doShowFrame, dontShowFrame) => {
       // console.log(`Effect ${effectID} deco visibility set`, doShowFrame, dontShowFrame)
@@ -1346,9 +1352,9 @@ var EditorCode = props => {
       })
     }
     var tryUpdateActive = () => {
-      console.log(`Effect ${effectID} Trying update active`)
+      // console.log(`Effect ${effectID} Trying update active`)
       revert = () => {
-        console.log(`Effect ${effectID} Reverting from updating active??`)
+        // console.log(`Effect ${effectID} Reverting from updating active??`)
       }
       // Problems when codeString doesn't change (e.g. add and del quickly) => need this
       updateFrameProps(inactiveFrameidx, {
@@ -1364,9 +1370,9 @@ var EditorCode = props => {
         shouldPushAnnotations: true,
         setErrorNotifications,
         onNeedsReload: reload => {
-          console.log(`Effect ${effectID} Reload needed on active`)
+          // console.log(`Effect ${effectID} Reload needed on active`)
           revert = () => {
-            console.log(`Effect ${effectID} Reverting inactive back to inactive`)
+            // console.log(`Effect ${effectID} Reverting inactive back to inactive`)
             updateFrameProps(inactiveFrameidx, {
               codeString: "",
               onNeedsReload: reload => reload(),
@@ -1378,14 +1384,14 @@ var EditorCode = props => {
             codeString: activeCode,
             onNeedsReload: reload => reload(),
             onLoadCode: () => {
-              console.log(`Effect ${effectID} Inactive loaded, timing out for its page load`)
+              // console.log(`Effect ${effectID} Inactive loaded, timing out for its page load`)
 
               // Inactive frame loaded so start showing its decos
               updateDecoVisiblity(inactiveFrameidx, activeFrameIdx)
 
               // Timeout for when its dom will start showing
               var waitForPageReady = setTimeout(() => {
-                console.log(`Effect ${effectID} Beginning CSS transition`)
+                // console.log(`Effect ${effectID} Beginning CSS transition`)
                 updateFrameProps(activeFrameIdx, {
                   style: {opacity: 0.0, transition, filter: "blur(2px)"},
                 })
@@ -1394,7 +1400,7 @@ var EditorCode = props => {
                 })
 
                 var waitForTransition = setTimeout(() => {
-                  console.log(`Effect ${effectID} Unloading active and swapping idx`)
+                  // console.log(`Effect ${effectID} Unloading active and swapping idx`)
                   updateFrameProps(activeFrameIdx, {
                     style: {opacity: 0.0, transition, filter: "none", zIndex: 0.2, pointerEvents: "none"},
                     codeString: "",
@@ -1407,14 +1413,14 @@ var EditorCode = props => {
                   revert = () => {}
                 }, 500)
                 revert = () => {
-                  console.log(`Effect ${effectID} Cancelling slow fade`)
+                  // console.log(`Effect ${effectID} Cancelling slow fade`)
                   clearTimeout(waitForTransition)
                   updateDecoVisiblity(activeFrameIdx, inactiveFrameidx)
                   // TODO: transition needs to revert back slowly. Since can't do that in cleanup, can add a ref and have, at the beginning of this effect, a transition back
                 }
-              }, 1500)
+              }, 100)
               revert = () => {
-                console.log(`Effect ${effectID} Cancelling code load-time timeout`)
+                // console.log(`Effect ${effectID} Cancelling code load-time timeout`)
                 updateDecoVisiblity(activeFrameIdx, inactiveFrameidx)
                 clearTimeout(waitForPageReady)
               }
@@ -1429,7 +1435,7 @@ var EditorCode = props => {
     tryUpdateActive()
 
     var cleanup = () => {
-      console.log(`Effect ${effectID} cleanup called`, revert)
+      // console.log(`Effect ${effectID} cleanup called`, revert)
       if (revert) {
         revert()
       } else {}
