@@ -48,9 +48,9 @@ async function handleEvent(event) {
 
     response.headers.set("X-XSS-Protection", "1; mode=block");
     response.headers.set("X-Content-Type-Options", "nosniff");
-    response.headers.set("X-Frame-Options", "");
+    // response.headers.set("X-Frame-Options", "");
     response.headers.set("Referrer-Policy", "unsafe-url");
-    response.headers.set("Feature-Policy", "none");
+    // response.headers.set("Feature-Policy", "none");
 
     return response;
 
