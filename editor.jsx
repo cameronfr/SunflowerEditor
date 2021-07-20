@@ -1164,11 +1164,12 @@ var ErrorNotification = ({title, content, onClick, color, ID, closeable, setHidd
   }
   var [closeButtonColor, setCloseButtonColor] = React.useState("unset")
   var jsx = <React.Fragment key={ID}>
-    <div onClick={onClick} style={{cursor: "pointer", borderRadius: 5, backgroundColor: color, color: "white", padding: STYLE.marginXSmall/2, paddingLeft: STYLE.marginXSmall, display: "flex", alignItems: "center"}}>
-      <span style={{fontWeight: "bold"}}>{title}</span>
-      {content}
-      &nbsp;
-      {closeable && <AiOutlineCloseCircle onClick={hideNotif} style={{color: closeButtonColor, borderRadius: "100%"}} onMouseEnter={() => setCloseButtonColor("black")} onMouseLeave={() => setCloseButtonColor("unset")}/>}
+    <div onClick={onClick} style={{cursor: "pointer", borderRadius: 5, backgroundColor: color, color: "white", padding: STYLE.marginXSmall/2, paddingLeft: STYLE.marginXSmall, display: "grid", gridTemplateColumns: "min-content 1fr min-content", overflow: "hidden", textOverflow: "ellipsis", height: "1.2em", marginBottom: 3, maxWidth: "800px"}}>
+      <span style={{fontWeight: "bold", whiteSpace: "nowrap", display: "flex"}}>{title}</span>
+      <div style={{display: "flex", alignItems: "start", overflow: "auto"}}>
+        {JSON.stringify(content)}
+      </div>
+      {closeable && <AiOutlineCloseCircle onClick={hideNotif} style={{color: closeButtonColor, borderRadius: "100%", alignSelf: "center"}} onMouseEnter={() => setCloseButtonColor("black")} onMouseLeave={() => setCloseButtonColor("unset")}/>}
     </div>
   </React.Fragment>
   return jsx
