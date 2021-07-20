@@ -1288,7 +1288,7 @@ var EditorCode = props => {
   var tabsArea = <>
     <div style={{display: "flex", justifyContent: "left", width: "100%", backgroundColor: "f0f0f0"}}>
       {tabs}
-      <a href="https://twitter.com/sunflowerindust" target="_blank" style={{textDecoration: "none", marginLeft: "auto", alignSelf: "center"}}>
+      <a href="https://twitter.com/sunflowereditor" target="_blank" style={{textDecoration: "none", marginLeft: "auto", alignSelf: "center"}}>
         <img src={logoImage} style={{height: 18, paddingRight: 5}}/>
       </a>
     </div>
