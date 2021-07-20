@@ -55,7 +55,7 @@ import {ViewPlugin, DecorationSet, WidgetType, ViewUpdate} from "@codemirror/vie
 import {renderToString} from "react-dom/server"
 //import * as interpreterWorker from "./interpreterWorker"
 
-// For YJS collaboration experiment
+// For YJS collaboration experiment. And example code
 import * as Y from 'yjs'
 import { yCollab } from './yCodemirrorNext'
 import logoImage from "./logo.png"
@@ -63,6 +63,7 @@ import { WebrtcProvider } from 'y-webrtc'
 import { WebsocketProvider } from 'y-websocket'
 // import { WebrtcProvider } from './y-webrtc'
 import { IndexeddbPersistence } from 'y-indexeddb'
+import EditorCodeExamples from "./editorCodeExamples.jsx"
 
 // STYLE dict
 
@@ -509,7 +510,7 @@ var InspectorWidget = ({data: {remoteObj, path}, update}) => {
 
   //stopPropagation for onClick, otherwise Codemirror will try and highlight. This fix only works in chrome, not safari, FF not tested.
   var output = <>
-    <span style={{position: "relative", textIndent: 0, marginLeft: "1ch", }}>
+    <span style={{position: "relative", textIndent: 0, paddingLeft: "1ch", }}>
       <span style={{position: "absolute", width: "max-content"}}>
         <span style={{color: "hsl(230, 4%, 64%)"}} onClick={e => {e.stopPropagation()}} onMouseDown={e => {e.stopPropagation()}}>
           {inner}
@@ -584,6 +585,13 @@ function CodeMirrorStateManager({docString, readOnly, scrollPos})  {
     var hex = Array.from(arr2, d => d.toString(16)).join("")
     return hex
   }
+  var setUrlParams = fn => {
+    // Sets room ID param, also clears other params
+    var url = new URL(window.location.href);
+    fn(url.searchParams)
+    url.search = url.searchParams.toString()
+    window.history.pushState({}, "", url.toString())
+  }
   var getDocumentID = () => {
     const urlParams = new URLSearchParams(window.location.search)
     var roomID = urlParams.get("room")
@@ -593,14 +601,27 @@ function CodeMirrorStateManager({docString, readOnly, scrollPos})  {
         roomID = generateID()
         window.localStorage.setItem("defaultRoomID", roomID)
       }
-      var url = new URL(window.location.href);
-      url.searchParams.set("room", roomID);
-      url.search = url.searchParams.toString()
-      window.history.pushState({}, "", url.toString())
+      setUrlParams(searchParams => {
+        searchParams.set("room", roomID)
+      })
     }
     return roomID
   }
-  var documentID = getDocumentID()
+  var documentID
+  var docTextToAppend
+
+  const urlParams = new URLSearchParams(window.location.search)
+  if (urlParams.get("loadExample")) {
+    var exampleToLoad = urlParams.get("loadExample")
+    docTextToAppend = EditorCodeExamples[exampleToLoad] || ""
+    documentID = generateID()
+    setUrlParams(searchParams => {
+      searchParams.set("room", documentID)
+      searchParams.delete("loadExample")
+    })
+  } else {
+    documentID = getDocumentID()
+  }
 
   const usercolors = [
     { color: "#30bced", light: "#30bced33" },
@@ -616,6 +637,10 @@ function CodeMirrorStateManager({docString, readOnly, scrollPos})  {
   const ydoc = new Y.Doc({gc: false})
   const indexeddbProvider = new IndexeddbPersistence(documentID, ydoc)
   const ytext = ydoc.getText("codemirror")
+
+  if (docTextToAppend) {
+    ytext.insert(0, docTextToAppend)
+  }
 
   // Snapshots functions. Some from prosemirror-versions demo
   var loadSnapshot = snapshotID => {
@@ -1165,7 +1190,8 @@ var CodeRunner = props => {
 }
 
 var ErrorNotification = ({title, content, onClick, color, ID, closeable, setHiddenErrorIDs}) => {
-  var hideNotif = () => {
+  var hideNotif = e => {
+    e.stopPropagation()
     setHiddenErrorIDs(IDs => ([...IDs, ID]))
   }
   var [closeButtonColor, setCloseButtonColor] = React.useState("unset")
