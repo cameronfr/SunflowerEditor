@@ -990,7 +990,7 @@ var CodeRunner = props => {
 
         // TODO: urgent: quick fix for clearing annotations of replaced-handlers. But really should just replace old annotations.
         if (annotationsBySnippetID[codeSnippetID].codeVersionID != codeVersionID) {
-          console.log("Clearing annotations for snipped ID", codeSnippetID)
+          // console.log("Clearing annotations for snipped ID", codeSnippetID)
           annotationsBySnippetID[codeSnippetID] = {codeVersionID, annotations: {}}
           errorsBySnippetID[codeSnippetID] = []
         }
