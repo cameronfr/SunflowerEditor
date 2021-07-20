@@ -720,7 +720,7 @@ function CodeMirrorStateManager({docString, readOnly, scrollPos})  {
       // myExtension(),
       oneLight,
       EditorView.exceptionSink.of(e => console.error(e)),
-      EditorView.theme({"&.cm-wrap": {outline: "none", height: "100%", fontFamily: "inherit"}, ".cm-scroller": {outline: "none", fontFamily: "MonoLisa, Menlo, Monaco, 'Courier New', monospace", fontWeight: "normal", fontSize: 14}, ".cm-content": {padding: STYLE.marginXSmall}}),
+      EditorView.theme({"&.cm-wrap": {outline: "none", height: "100%", fontFamily: "inherit"}, ".cm-scroller": {outline: "none", fontFamily: "MonoLisa, Menlo, Monaco, 'Courier New', monospace", fontWeight: "normal", fontSize: 14}, ".cm-content": {padding: STYLE.marginXSmall, minWidth: "unset !important"}}), //need minWidth on cm-content because otherwise codemirror will increase the minWidth when click on inspector popup that appears outside of editor bounds.
       indentOnInput(),
       // autocompletion({override: [completeAnyWord]}),
       ...(language ? [language] : []),

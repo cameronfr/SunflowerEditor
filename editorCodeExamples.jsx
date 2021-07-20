@@ -1,3 +1,22 @@
+var basicExample = `
+// Add some javascript and watch values update!
+
+var m = 224
+m*3+28
+
+var x = new Date()
+x.toString()
+
+var text = "Welcome to the editor 123"
+
+var components = text.split(" ")
+
+var newText = components.join("--")
+
+newText
+`
+
+
 var replExample = `
 // ------------------------------ REPL EXAMPLE ------------------------------
 
@@ -23,7 +42,7 @@ useHandler(newF => {
 `
 
 var inspectorExample = `
-// --------------------- BASIC EXAMPLE ---------------------
+// --------------------- INSPECTOR EXAMPLE ---------------------
 
 
 // First click on the pane on the left and move the mouse around.
@@ -154,5 +173,5 @@ function enableFastRefresh(name) {
 }
 `
 
-const examples = {replExample, inspectorExample, domExample, reactExample}
+const examples = {replExample, inspectorExample, domExample, reactExample, basicExample}
 export default examples
