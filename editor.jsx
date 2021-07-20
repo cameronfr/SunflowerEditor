@@ -742,6 +742,10 @@ function CodeMirrorStateManager({docString, readOnly, scrollPos})  {
     return mappedLocation
   }
 
+  this.cursorPosition = () => {
+
+  }
+
   this.setDecorations = (keyedAnnotations) => {
     // console.log("In setDecorations", Object.keys(keyedAnnotations), {keyedAnnotations}, {text: this.getText()})
     this.state.offsetMaps
@@ -1006,8 +1010,16 @@ var CodeRunner = props => {
             side: 1, // draw after cursor
             block: isBlock,
           })
-          var widgetWithRange = widget.range(location, location)
-          annotationsBySnippetID[codeSnippetID].annotations[location] = widgetWithRange
+          var newLocation = location
+          // Apply heuristic: if the decoration is to the left of the cursor by one space, move it to the right. HOTFIX
+          if (editorStateManager.state.editorState.selection.ranges[0].from == location + 1) {
+            const charBefore = editorStateManager.state.editorState.doc.slice(location, editorStateManager.state.editorState.selection.ranges[0].from)
+            if (charBefore.text.length == 1 && charBefore.text?.[0] == " ") {
+              newLocation = location + 1
+            }
+          }
+          var widgetWithRange = widget.range(newLocation, newLocation)
+          annotationsBySnippetID[codeSnippetID].annotations[newLocation] = widgetWithRange
         }
 
         if (errorType && widgetClassID == "inspectorWidget") {
