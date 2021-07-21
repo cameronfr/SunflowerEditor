@@ -1078,6 +1078,20 @@ var runCode = ({codeString, codeVersionID}) => {
       var mapper
       try {
         var parsedError = ErrorStackParser.parse(e)
+        // Probably Safari, can still guess error position
+        if (parsedError[0]?.functionName == "_runner" && e.line != undefined && e.column != undefined) {
+          // Only works for errors in main body :/
+          mapper = workerState.activeSnippets["RunnerVMInitial"].mapper
+          var generatedPosition = {line: e.line - mapper.topLineOffset + 1, column: e.column - 2}
+          originalPosition= mapper.generatedPositionToOriginalPosition(generatedPosition)
+          // for (var i=-6; i< 6; i++) {
+          //   for (var j=-6; j<6; j++) {
+          //     var pos = {line: generatedPosition.line +i, column: generatedPosition.column +j}
+          //     console.warn(i,j, mapper.generatedPositionToOriginalPosition(pos))
+          //   }
+          // }
+          console.log("Custom safari error parser, error mapped to", originalPosition)
+        }
         for (var frame of parsedError) {
           // Find first frame that occurs in a sourceURL we made
           var activeSnippetSourceURLs = Object.keys(workerState.activeSnippets)
