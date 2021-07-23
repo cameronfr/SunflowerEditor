@@ -24,8 +24,7 @@ var makeLogger = (prefix, consoleObj)=> {
 }
 const shortID = String(workerID).slice(0,2)
 var workerLogger = makeLogger(`Worker ${String(workerID).slice(0,2)}`, console)
-// console = {...console, ...workerLogger}
-console.log = () => {}
+console = {...console, ...workerLogger}
 
 // GLOBALS
 // Full state includes below as well as DOM state, so fully resetting state is done by reloading the page
@@ -536,7 +535,7 @@ var getTransformedCode = ({codeString, pluginSets, onComment}) => {
     currentAst = transformed.ast
   })
 
-  console.log(`Transforming took ${Date.now()-transformStartTime}ms`)
+  // console.log(`Transforming took ${Date.now()-transformStartTime}ms`)
 
   // const debugMaintransformStart = Date.now()
   // // Order here is important. React preset adds code at top of file that we don't want transformed.
@@ -613,7 +612,7 @@ var checkAddHandlers = ({codeString, codeVersionID}) => {
   var differences = DeepDiff.diff(currentAst, updatedAst, prefilter)
 
   if (!differences) {
-    console.log("ast: ast didn't change")
+    // console.log("ast: ast didn't change")
     return {success: true}
   }
 
@@ -648,7 +647,7 @@ var checkAddHandlers = ({codeString, codeVersionID}) => {
       continue
     } else if (handlerPath == undefined) {
       // Diff not covered. break
-      console.log(`Processing handlers took ${Date.now()-startTime}ms. Diff not covered`)
+      // console.log(`Processing handlers took ${Date.now()-startTime}ms. Diff not covered`)
       // console.log("ast: unhandled bound changes", diff.path, {diff, handlerPaths})
       return {success: false}
     }
@@ -694,10 +693,10 @@ var checkAddHandlers = ({codeString, codeVersionID}) => {
     performers[handlerPath] = performer
   }
 
-  console.log("ast: calling all handlers")
+  // console.log("ast: calling all handlers")
   // Update the latest AST of the worker state, since we have processed the changes. Do this first in case code errors
   workerState.currentAst = updatedAst
-  console.log(`Processing handlers took ${Date.now()-startTime}ms`)
+  // console.log(`Processing handlers took ${Date.now()-startTime}ms`)
 
   //TODO: add try catch
   Object.values(performers).forEach(performer => performer())
@@ -1079,7 +1078,11 @@ var runCode = ({codeString, codeVersionID}) => {
       try {
         var parsedError = ErrorStackParser.parse(e)
         // Probably Safari, can still guess error position
-        if (parsedError[0]?.functionName == "_runner" && e.line != undefined && e.column != undefined) {
+        var includesRunner = false
+        parsedError.forEach(frame => {
+          includesRunner = includesRunner || frame?.functionName == "_runner"
+        })
+        if (includesRunner && e.line != undefined && e.column != undefined) {
           // Only works for errors in main body :/
           mapper = workerState.activeSnippets["RunnerVMInitial"].mapper
           var generatedPosition = {line: e.line - mapper.topLineOffset + 1, column: e.column - 2}
@@ -1090,7 +1093,7 @@ var runCode = ({codeString, codeVersionID}) => {
           //     console.warn(i,j, mapper.generatedPositionToOriginalPosition(pos))
           //   }
           // }
-          console.log("Custom safari error parser, error mapped to", originalPosition)
+          // console.log("Custom safari error parser, error mapped to", originalPosition)
         }
         for (var frame of parsedError) {
           // Find first frame that occurs in a sourceURL we made
@@ -1141,6 +1144,7 @@ var runCode = ({codeString, codeVersionID}) => {
   }
 
   var onError = e => {
+    console.warn("error", {e})
     handleRunError({e, errorType: "run"})
     // workerState.postFrameMessage({finished: true})
   }
@@ -1155,6 +1159,7 @@ var runCode = ({codeString, codeVersionID}) => {
   window.addEventListener("error", event => {
     onError(event.error)
   })
+
   // Promise rejection errors. TODO: make it say "promise error" instead of "run error"
   window.onunhandledrejection = event => {
     event.promise.catch(e => {
@@ -1184,7 +1189,7 @@ var runCode = ({codeString, codeVersionID}) => {
   var onFinished = () => {
     // workerState.postFrameMessage({finished: true})
   }
-  console.log("Running Code ast")
+  // console.log("Running Code ast")
   workerState.currentAst = originalAst
   workerState.startedRun = true
   runner({onFinished, onError, useHandler, registerWidget, getWidgetInstance})
@@ -1208,6 +1213,6 @@ var initialize = (args) => {
     window.parent.postMessage(data, parentOrigin)
   }
   workerState.interpreterID = interpreterID
-  console.log("Initializing worker", {interpreterID})
+  // console.log("Initializing worker", {interpreterID})
   registerPredefinedWidgets()
 }
