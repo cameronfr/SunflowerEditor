@@ -751,12 +751,21 @@ var getWidgetInstance = (inSnippetLocation, widgetClassID, codeSnippetID, codeVe
   const widgetInstanceID = location + codeVersionID
   const widgetClass = workerState.widgetClassList[widgetClassID]
   if (!(widgetInstanceID in workerState.widgetData)) {
-    workerState.widgetData[widgetInstanceID] = {class: widgetClass, state: {}}
+    workerState.widgetData[widgetInstanceID] = {class: widgetClass, state: {}, currentTimeout: null, currentPayload: null}
   }
+  var widgetData = workerState.widgetData[widgetInstanceID]
 
   var sendRenderMessage = (data, extra) => {
     const {isBlock} = widgetClass
-    workerState.postFrameMessage({callWidget: {data, widgetClassID, widgetInstanceID, location, codeVersionID, codeSnippetID, isBlock, ...extra}})
+    var payload = {callWidget: {data, widgetClassID, widgetInstanceID, location, codeVersionID, codeSnippetID, isBlock, ...extra}}
+    widgetData.currentPayload = payload
+    // Only update once a frame max
+    if (widgetData.currentTimeout == null) {
+      widgetData.currentTimeout = setTimeout(() => {
+        workerState.postFrameMessage(widgetData.currentPayload)
+        widgetData.currentTimeout = null
+      }, 1000/30)
+    }
   }
   return {sendRenderMessage, state: workerState.widgetData[widgetInstanceID].state, widgetClass}
 }
