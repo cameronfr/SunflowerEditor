@@ -819,7 +819,11 @@ var longRepresentation = obj => {
   } else {
     // Object
     if (obj.toString && (obj.toString != Object.prototype.toString)) {
-      widgetOptions.toStringOutput = obj.toString()
+      try {
+        widgetOptions.toStringOutput = obj.toString()
+      } catch(e) {
+        
+      }
     }
     var propNames = Object.keys(Object.getOwnPropertyDescriptors(obj))
     var value = {}
