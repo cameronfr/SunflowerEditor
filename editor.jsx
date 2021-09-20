@@ -43,6 +43,7 @@ import {history, historyKeymap} from "@codemirror/history"
 import {commentKeymap} from "@codemirror/comment"
 import {lineNumbers} from "@codemirror/gutter"
 import {autocompletion, completeAnyWord} from "@codemirror/autocomplete"
+import {codeFolding, foldGutter} from "@codemirror/fold"
 
 // For Style
 import { HighlightStyle, tags } from '@codemirror/highlight';
@@ -714,6 +715,9 @@ function CodeMirrorStateManager({docString, readOnly, scrollPos})  {
     extensions: [
       yCollab(ytext, wsProvider.awareness),
       saveSnapshots,
+
+      codeFolding(),
+      foldGutter(),
 
       lineNumbers(),
       decorations.of(EditorView.decorations.of(Decoration.set([]))),
