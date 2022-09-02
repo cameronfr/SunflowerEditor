@@ -11,8 +11,14 @@ const DEBUG = false
 
 addEventListener('fetch', event => {
   try {
-    event.respondWith(handleEvent(event))
+    if (event.request.method === 'OPTIONS') {
+      // Handle CORS preflight requests
+      event.respondWith(handleOptions(event.request));
+    } else {
+      event.respondWith(handleEvent(event))
+    }
   } catch (e) {
+    console.log(e.message || e.toString())
     if (DEBUG) {
       return event.respondWith(
         new Response(e.message || e.toString(), {
@@ -23,6 +29,12 @@ addEventListener('fetch', event => {
     event.respondWith(new Response('Internal Error', { status: 500 }))
   }
 })
+
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Methods': 'GET,HEAD,POST,OPTIONS',
+  'Access-Control-Max-Age': '86400',
+};
 
 async function handleEvent(event) {
   const url = new URL(event.request.url)
@@ -52,6 +64,13 @@ async function handleEvent(event) {
     response.headers.set("Referrer-Policy", "unsafe-url");
     // response.headers.set("Feature-Policy", "none");
 
+    // console.log((new URL(event.request.url)).origin);
+    var originString = (new URL(event.request.url)).origin;
+    // regex test for https://*.framer.com or https://*.sunflower.industries
+    if (originString.match(/http[s]?:\/\/.*\.?framer\.com/) || originString.match(/http[s]?:\/\/.*\.?sunflower\.industries/) || originString.match(/http[s]?:\/\/.*\.?framercanvas\.com/)) {
+      response.headers.set("Access-Control-Allow-Origin","*");
+    }
+
     return response;
 
   } catch (e) {
@@ -69,6 +88,41 @@ async function handleEvent(event) {
     return new Response(e.message || e.toString(), { status: 500 })
   }
 }
+
+
+function handleOptions(request) {
+  // Make sure the necessary headers are present
+  // for this to be a valid pre-flight request
+  let headers = request.headers;
+  if (
+    headers.get('Origin') !== null &&
+    headers.get('Access-Control-Request-Method') !== null &&
+    headers.get('Access-Control-Request-Headers') !== null
+  ) {
+    // Handle CORS pre-flight request.
+    // If you want to check or reject the requested method + headers
+    // you can do that here.
+    let respHeaders = {
+      ...corsHeaders,
+      // Allow all future content Request headers to go back to browser
+      // such as Authorization (Bearer) or X-Client-Name-Version
+      'Access-Control-Allow-Headers': request.headers.get('Access-Control-Request-Headers'),
+    };
+
+    return new Response(null, {
+      headers: respHeaders,
+    });
+  } else {
+    // Handle standard OPTIONS request.
+    // If you want to allow other HTTP Methods, you can do that here.
+    return new Response(null, {
+      headers: {
+        Allow: 'GET, HEAD, POST, OPTIONS',
+      },
+    });
+  }
+}
+
 
 /**
  * Here's one example of how to modify a request to
